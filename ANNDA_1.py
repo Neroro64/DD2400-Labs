@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 np.random.seed(2020)
 
 n = 100
-epoch = 100
-eta = 0.005
+epoch = 20
+eta = 0.0001
 
 
 # As defined in the lab    
@@ -96,7 +96,7 @@ def MSE(W, input_vec, target):
            
     return square/total
 
-(A, B) = linear(n, [1,0.5], [-1,0], 0.5, 0.5)
+(A, B) = linear(n, [1,0.5], [-1,0], 0.3, 0.3)
 
 
 features = (np.concatenate([A,B],axis=0))
