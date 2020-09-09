@@ -5,7 +5,8 @@ from sklearn.model_selection import train_test_split
 np.random.seed(2020)
 
 n = 100
-
+epoch = 100
+eta = 0.005
 
 
 # As defined in the lab    
@@ -49,6 +50,12 @@ class one_layer_model():
             # Threshold
             f = np.where(h > 0, 1, -1)
             W -= self.ETA*(f-targets) @ input_vec.T
+            
+            #mse = MSE(W, features, targets)
+            #print(mse)
+            
+            #acc = accuracy(W, features, targets)
+            #print(acc)
         return W, 0
             
         
@@ -76,12 +83,21 @@ def accuracy(W, input_vec, target):
            
     return (count/total)*100
 
+def MSE(W, input_vec, target):
+    # Forward pass
+    h = W @ input_vec
+    f = np.where(h > 0, 1, -1)
+    
+    square = 0
+    total = target.shape[1]
+    
+    for i in range(total):
+        square += (target[0][i] - f[0][i])**2
+           
+    return square/total
 
 (A, B) = linear(n, [1,0.5], [-1,0], 0.5, 0.5)
 
-
-epoch = 100
-eta = 0.005
 
 features = (np.concatenate([A,B],axis=0))
 features = (np.concatenate([features,np.ones((features.shape[0],1))],axis=1)).T
