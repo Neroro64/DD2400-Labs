@@ -12,7 +12,7 @@ np.random.seed(2020)
 # Saves the 1510 first values of the time series
 xs = np.zeros((1510))
 
-def x(t, beta=0.2, gamma=0.1, n=10, tau=24, max_t = 1510):
+def x(t, beta=0.2, gamma=0.1, n=10, tau=25, max_t = 1510):
     
     # Handle negative t's
     if t < 0:
@@ -143,6 +143,7 @@ def run(nb_hidden_layers, nb_hidden_nodes, data_patterns, data_targets):
     model, _ = train(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes)
 
     return model
+
 
 
 def plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, reg_strengths):
