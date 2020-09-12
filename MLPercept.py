@@ -205,12 +205,16 @@ plt.show()
 ######## Noise ########
 np.random.seed(2020)
 
+# Add noise
 noise = [0.03, 0.09, 0.18]
 
 n_data = 1200
 t = np.arange(301, 1501, 1)
-# Add noise
-input_patterns = np.random.normal(0, noise[0], (6, n_data))
+input_patterns = np.zeros((6, n_data))
+
+noise_add = np.random.normal(0, noise[0], 1510)
+for k in range(1510):
+    xs[k] += noise_add[k]
 
 for i in range(n_data):
     input_patterns[0][i] += x(t[i]-20)
