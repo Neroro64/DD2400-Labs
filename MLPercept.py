@@ -78,35 +78,34 @@ def split_inputs(input_patterns, targets, proportion):
 
     
     
-def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001):
-
+def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001, do_plot=True):
+    np.random.seed(2020)
     model = network(nb_hidden_layers, nb_hidden_nodes, regul_strength=regul_strength)
     
     # Train the network and save results
-    history = model.fit(np.transpose(patterns), np.transpose(targets), verbose=0, epochs=400, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, verbose=0, mode='auto', baseline=None, restore_best_weights=False)])
+    history = model.fit(np.transpose(patterns), np.transpose(targets), verbose=0, epochs=200, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, verbose=0, mode='auto', baseline=None, restore_best_weights=False)])
 
     l1 = history.history['loss']
     l2 = history.history['val_loss']
 
-    # If you dont want the first values
-    #l1.pop(0)
-    #l2.pop(0)
+    l1.pop(0)
+    l2.pop(0)
     
-
-    plt.plot(l1)
-    plt.plot(l2)
-    plt.title('Model loss')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Validation'], loc='upper right')
-    plt.show()
+    if do_plot:
+        plt.plot(l1)
+        plt.plot(l2)
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Validation'], loc='upper right')
+        plt.show()
         
     return model, history
 
 
 
 def network(nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001):
-
+    np.random.seed(2020)
     model = Sequential()
     
     # 2 layer net
@@ -118,7 +117,7 @@ def network(nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001):
                         kernel_regularizer=regularizers.l1(regul_strength)))
     
     # 3 layer net
-    if nb_hidden_layers == 2:
+    elif nb_hidden_layers == 2:
          model.add(Dense(nb_hidden_nodes[0],
                         input_shape=(5,),
                         use_bias=True,
@@ -132,14 +131,15 @@ def network(nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001):
 
     # Add the output layer
     model.add(Dense(1, use_bias=True, kernel_regularizer=regularizers.l1(regul_strength)))
+    
     # Compile the model
-    model.compile(optimizer=SGD(lr=0.01, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
+    model.compile(optimizer=SGD(lr=0.1, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
     
     return model
 
 
 def run(nb_hidden_layers, nb_hidden_nodes, data_patterns, data_targets):
-
+    np.random.seed(2020)
     model, _ = train(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes)
 
     return model
@@ -159,14 +159,15 @@ def plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, re
         #plt.hist(np.concatenate((v.flatten(), w.flatten())), bins=np.arange(-2.0, 2.2, 0.2) if i == 0 else 'auto')
         plt.show()
 
+
 #############################
     
 ######### Data ##########
-nb_data = 1200
+n_data = 1200
 t = np.arange(301, 1501, 1)
-input_patterns = np.zeros((6, nb_data))
+input_patterns = np.zeros((6, n_data))
 
-for i in range(nb_data):
+for i in range(n_data):
     input_patterns[0][i] += x(t[i]-20)
     input_patterns[1][i] += x(t[i]-15)
     input_patterns[2][i] += x(t[i]-10)
@@ -182,8 +183,8 @@ data_patterns, data_targets, test_patterns, test_targets = split_inputs(input_pa
 
 
 ########## Plot test predictions vs actual time series ############
-model = run(1, [5], data_patterns, data_targets)
-#model = run(2, [6, 6], data_patterns, data_targets)
+#model = run(1, [5], data_patterns, data_targets)
+model = run(2, [6, 6], data_patterns, data_targets)
 
 predictions = model.predict(np.transpose(test_patterns))
 predictions = predictions.reshape(len(predictions))
@@ -195,11 +196,46 @@ plt.show()
 
 
 ########## Histograms ##########
-reg_strengths = [0.001, 0.00001]
-nb_hidden_layers = 1
-nb_hidden_nodes = [6]
-plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, reg_strengths)
+#reg_strengths = [0.001, 0.00001]
+#nb_hidden_layers = 1
+#nb_hidden_nodes = [6]
+#plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, reg_strengths)
 
 
+######## Noise ########
+np.random.seed(2020)
+
+noise = [0.03, 0.09, 0.18]
+
+n_data = 1200
+t = np.arange(301, 1501, 1)
+# Add noise
+input_patterns = np.random.normal(0, noise[0], (6, n_data))
+
+for i in range(n_data):
+    input_patterns[0][i] += x(t[i]-20)
+    input_patterns[1][i] += x(t[i]-15)
+    input_patterns[2][i] += x(t[i]-10)
+    input_patterns[3][i] += x(t[i]-5)
+    input_patterns[4][i] += x(t[i])
+    # Targets
+    input_patterns[5][i] = x(t[i]+5) 
+    
+input_patterns, targets = np.split(input_patterns, [5])
+
+# Split data into (train, validation) and testing.
+data_patterns, data_targets, test_patterns, test_targets = split_inputs(input_patterns, targets.flatten(), 200)
 
 
+########## Plot test predictions vs actual time series ############
+#model = run(1, [5], data_patterns, data_targets)
+model = run(2, [6, 6], data_patterns, data_targets)
+
+predictions = model.predict(np.transpose(test_patterns))
+predictions = predictions.reshape(len(predictions))
+time = np.arange(1300, 1500, 1)
+plt.plot(time, test_targets.flatten())
+plt.plot(time, predictions)
+plt.legend(['Time series', 'Approximation'])
+plt.title('3-layer with noise')
+plt.show()
