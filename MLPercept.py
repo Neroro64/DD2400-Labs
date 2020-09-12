@@ -78,7 +78,7 @@ def split_inputs(input_patterns, targets, proportion):
 
     
     
-def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001, do_plot=True):
+def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001):
 
     model = network(nb_hidden_layers, nb_hidden_nodes, regul_strength=regul_strength)
     
@@ -88,17 +88,18 @@ def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=0
     l1 = history.history['loss']
     l2 = history.history['val_loss']
 
-    l1.pop(0)
-    l2.pop(0)
+    # If you dont want the first values
+    #l1.pop(0)
+    #l2.pop(0)
     
-    if do_plot:
-        plt.plot(l1)
-        plt.plot(l2)
-        plt.title('Model loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Validation'], loc='upper right')
-        plt.show()
+
+    plt.plot(l1)
+    plt.plot(l2)
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper right')
+    plt.show()
         
     return model, history
 
@@ -144,9 +145,23 @@ def run(nb_hidden_layers, nb_hidden_nodes, data_patterns, data_targets):
     return model
 
 
+def plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, reg_strengths):
+    
+    for i in range(len(reg_strengths)):
+        model, _ = train(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=reg_strengths[i])        
+        weights = model.get_weights()
+        # Get the weights (without biases)
+        w = weights[0] 
+        v = weights[2]
+        plt.title('Weights histogram for regularisation strength = ' + str(reg_strengths[i]))
+        plt.xlim(-2, 2)
+        plt.hist(np.concatenate((v.flatten(), w.flatten())))
+        #plt.hist(np.concatenate((v.flatten(), w.flatten())), bins=np.arange(-2.0, 2.2, 0.2) if i == 0 else 'auto')
+        plt.show()
+
 #############################
     
-# Inputs generation
+######### Data ##########
 nb_data = 1200
 t = np.arange(301, 1501, 1)
 input_patterns = np.zeros((6, nb_data))
@@ -166,18 +181,24 @@ input_patterns, targets = np.split(input_patterns, [5])
 data_patterns, data_targets, test_patterns, test_targets = split_inputs(input_patterns, targets.flatten(), 200)
 
 
-# model = run(1, [6], data_patterns, data_targets)
-model = run(2, [6, 6], data_patterns, data_targets)
+########## Plot test predictions vs actual time series ############
+model = run(1, [5], data_patterns, data_targets)
+#model = run(2, [6, 6], data_patterns, data_targets)
 
-
-# Plot test predictions vs actual time series
 predictions = model.predict(np.transpose(test_patterns))
 predictions = predictions.reshape(len(predictions))
-time = np.arange(1299, 1499, 1)
+time = np.arange(1300, 1500, 1)
 plt.plot(time, xs[1300: 1500])
 plt.plot(time, predictions)
 plt.legend(['Time series', 'Approximation'])
 plt.show()
+
+
+########## Histograms ##########
+reg_strengths = [0.001, 0.00001]
+nb_hidden_layers = 1
+nb_hidden_nodes = [6]
+plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, reg_strengths)
 
 
 
