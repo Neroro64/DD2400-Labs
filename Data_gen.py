@@ -25,7 +25,6 @@ g_mB = [0.0, -0.1]
 g_sigmaB = 0.3;
 
 
-
 # As defined in the lab    
 def linear(n, m1,m2, sigma1, sigma2):
     classA = np.random.normal(m1, sigma1, size=[n,2])
