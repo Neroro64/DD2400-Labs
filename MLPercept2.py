@@ -176,7 +176,7 @@ def network(nb_hidden_layers, nb_hidden_nodes, noise, regul_strength=0.00001):
     model.add(Dense(1, use_bias=True, kernel_regularizer=regularizers.l1(regul_strength)))
     
     # Compile the model
-    model.compile(optimizer=SGD(lr=0.01, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
+    model.compile(optimizer=SGD(lr=0.05, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
     
     return model
 
