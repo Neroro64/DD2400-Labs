@@ -8,7 +8,22 @@ from keras.layers import Dense
 from keras.layers import GaussianNoise
 from keras import regularizers
 
-np.random.seed(2020)
+seed_value= 0
+
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+import os
+os.environ['PYTHONHASHSEED']=str(seed_value)
+
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(seed_value)
+
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(seed_value)
+
+# 4. Set the `tensorflow` pseudo-random generator at a fixed value
+import tensorflow as tf
+tf.random.set_seed(seed_value)
 
 # Saves the 1510 first values of the time series
 xs = np.zeros((1510))
