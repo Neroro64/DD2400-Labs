@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from keras.optimizers import SGD
-from keras.losses import mean_squared_error
-from keras.callbacks import EarlyStopping
-from keras.models import Sequential
-from keras.layers import Dense
-from keras import regularizers
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.losses import mean_squared_error
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras import regularizers
 
 np.random.seed(2020)
 
