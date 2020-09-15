@@ -205,6 +205,11 @@ def plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, re
         plt.hist(np.concatenate((v.flatten(), w.flatten())))
         #plt.hist(np.concatenate((v.flatten(), w.flatten())), bins=np.arange(-2.0, 2.2, 0.2) if i == 0 else 'auto')
         plt.show()
+        
+# Compute test MSE        
+def test_MSE(A,B):
+   mse = ((A - B)**2).mean(axis=None)
+   return mse 
 
 
 #############################
@@ -241,6 +246,7 @@ plt.plot(time, predictions)
 plt.legend(['Time series', 'Approximation'])
 plt.show()
 
+print("Test MSE for 3-layer is: " + str(test_MSE(test_targets.flatten(),predictions)))
 
 ########## Histograms ##########
 #reg_strengths = [0.001, 0.00001]
@@ -269,3 +275,5 @@ plt.legend(['Time series', 'Approximation'])
 plt.title('3-layer with noise')
 plt.show()
 
+
+print("Test MSE for 3-layer with noise is: " + str(test_MSE(test_targets.flatten(),predictions)))
