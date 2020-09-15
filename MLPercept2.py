@@ -116,6 +116,9 @@ def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, noise, regul_str
         plt.legend(['Train', 'Validation'], loc='upper right')
         plt.show()
         
+    print("Lowest training MSE: " + str(min(l1)))
+    print("Lowest validation MSE: " + str(min(l2)))
+        
     return model, history
 
 
