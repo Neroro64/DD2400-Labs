@@ -167,7 +167,7 @@ class Model:
         training_accuracy = []
         validation_accuracy = []
 
-        t = 0;
+        t = 0
         k = (self.ETA_SIZE * 2) / 10
         while(t < self.EPOCHS):
             # Shuffles the order of samples 
