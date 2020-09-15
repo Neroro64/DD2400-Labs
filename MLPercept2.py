@@ -99,7 +99,7 @@ def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, noise, regul_str
     model = network(nb_hidden_layers, nb_hidden_nodes, noise, regul_strength=regul_strength)
     
     # Train the network and save results
-    history = model.fit(np.transpose(patterns), np.transpose(targets), verbose=0, epochs=200, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, verbose=0, mode='auto', baseline=None, restore_best_weights=False)])
+    history = model.fit(np.transpose(patterns), np.transpose(targets), verbose=0, epochs=300, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=20, verbose=0, mode='auto', baseline=None, restore_best_weights=False)])
 
     l1 = history.history['loss']
     l2 = history.history['val_loss']
@@ -176,7 +176,7 @@ def network(nb_hidden_layers, nb_hidden_nodes, noise, regul_strength=0.00001):
     model.add(Dense(1, use_bias=True, kernel_regularizer=regularizers.l1(regul_strength)))
     
     # Compile the model
-    model.compile(optimizer=SGD(lr=0.1, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
+    model.compile(optimizer=SGD(lr=0.01, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
     
     return model
 
