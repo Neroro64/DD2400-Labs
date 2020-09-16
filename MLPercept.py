@@ -7,7 +7,22 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras import regularizers
 
-np.random.seed(2020)
+seed_value= 0
+
+# 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+import os
+os.environ['PYTHONHASHSEED']=str(seed_value)
+
+# 2. Set `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(seed_value)
+
+# 3. Set `numpy` pseudo-random generator at a fixed value
+np.random.seed(seed_value)
+
+# 4. Set the `tensorflow` pseudo-random generator at a fixed value
+import tensorflow as tf
+tf.random.set_seed(seed_value)
 
 # Saves the 1510 first values of the time series
 xs = np.zeros((1510))
@@ -83,7 +98,7 @@ def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=0
     model = network(nb_hidden_layers, nb_hidden_nodes, regul_strength=regul_strength)
     
     # Train the network and save results
-    history = model.fit(np.transpose(patterns), np.transpose(targets), verbose=0, epochs=200, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, verbose=0, mode='auto', baseline=None, restore_best_weights=False)])
+    history = model.fit(np.transpose(patterns), np.transpose(targets), verbose=0, epochs=300, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=20, verbose=0, mode='auto', baseline=None, restore_best_weights=False)])
 
     l1 = history.history['loss']
     l2 = history.history['val_loss']
@@ -99,6 +114,9 @@ def train(patterns, targets, nb_hidden_layers, nb_hidden_nodes, regul_strength=0
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Validation'], loc='upper right')
         plt.show()
+        
+    #print("Lowest training MSE: " + str(min(l1)))
+    #print("Lowest validation MSE: " + str(min(l2)))
         
     return model, history
 
@@ -133,7 +151,7 @@ def network(nb_hidden_layers, nb_hidden_nodes, regul_strength=0.00001):
     model.add(Dense(1, use_bias=True, kernel_regularizer=regularizers.l1(regul_strength)))
     
     # Compile the model
-    model.compile(optimizer=SGD(lr=0.1, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
+    model.compile(optimizer=SGD(lr=0.05, momentum=0.9, nesterov=False), loss='mean_squared_error', metrics=['accuracy'])
     
     return model
 
@@ -159,6 +177,13 @@ def plot_hist(data_patterns, data_targets, nb_hidden_layers, nb_hidden_nodes, re
         plt.hist(np.concatenate((v.flatten(), w.flatten())))
         #plt.hist(np.concatenate((v.flatten(), w.flatten())), bins=np.arange(-2.0, 2.2, 0.2) if i == 0 else 'auto')
         plt.show()
+        
+        
+# Compute test MSE        
+def test_MSE(A,B):
+   mse = ((A - B)**2).mean(axis=None)
+
+   return mse    
 
 
 #############################
@@ -193,7 +218,10 @@ time = np.arange(1300, 1500, 1)
 plt.plot(time, test_targets.flatten())
 plt.plot(time, predictions)
 plt.legend(['Time series', 'Approximation'])
+#plt.title('2-layer with noise')
 plt.show()
+
+print("Test MSE for 3-layer is: " + str(test_MSE(test_targets.flatten(),predictions)))
 
 
 ########## Histograms ##########
@@ -206,14 +234,16 @@ plt.show()
 ######## Noise ########
 np.random.seed(2020)
 
-# Add noise
+# noise
 noise = [0.03, 0.09, 0.18]
 
 n_data = 1200
 t = np.arange(301, 1501, 1)
 input_patterns = np.zeros((6, n_data))
 
+# Add noise here
 noise_add = np.random.normal(0, noise[0], 1510)
+
 for k in range(1510):
     xs[k] += noise_add[k]
 
@@ -244,3 +274,5 @@ plt.plot(time, predictions)
 plt.legend(['Time series', 'Approximation'])
 plt.title('3-layer with noise')
 plt.show()
+
+print("Test MSE for 3-layer with noise is: " + str(test_MSE(test_targets.flatten(),predictions)))
