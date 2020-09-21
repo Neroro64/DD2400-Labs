@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Hopfield:
@@ -9,7 +9,8 @@ class Hopfield:
         self.positions_to_update = []
 
     # Compute the weights matrix
-    def train(self, patterns):     
+    def train(self, patterns):    
+        # Matrix multiply pattern as two column vectors, then sum over all patterns
         self.weights = np.sum([p.reshape((-1,1))@p.reshape((1,-1)) for p in patterns], axis=0)
         np.fill_diagonal(self.weights, 0)
         
@@ -97,18 +98,21 @@ def binary_patterns(length):
       
         
 # Check if converges to stored patterns when distorted inputs are given   
-def test_recall_distorted(model, pattern_distorted, pattern_expected, synchronous=True, print_result=True):
+def test_recall_distorted(model, pattern_distorted, pattern_expected, synchronous=True, print_result=True, check=1):
     pattern_recalled = model.recall(pattern_distorted, synchronous=synchronous, max_iterations=100)
     good_recall_or_not = np.array_equal(pattern_recalled, pattern_expected)
     
     if print_result:
-        message = 'Success' if good_recall_or_not else 'Failure'
-        print("Input:", pattern_distorted, ", Output:", pattern_recalled, " ", message)      
+        if check == 1:
+            message = 'Success' if good_recall_or_not else 'Failure'
+            print("Input:", pattern_distorted, ", Output:", pattern_recalled, " ", message) 
+            
+        else:
+            print("Input:", pattern_distorted, ", Output:", pattern_recalled)      
 
     
         
-        
-        
+               
 #################################################################################### 
 # ------------------------------ 2.2 ------------------------------       
 # Data to be memorised 
@@ -146,5 +150,34 @@ for attractor in attractors:
 # Answer: The attractors are x1, x2, x3 and their inverses (1 and -1 exchanged)
       
       
+# Dissimilar patterns
+xD4 = [1,1,-1,1,-1,-1,1,1]
+xD5 = [1,1,1,1,1,-1,1,-1]
+xD6 = [1,-1,1,1,1,-1,1,-1]
+
+print("Synchronous")
+test_recall_distorted(model, xD4, x1, synchronous=True, check=0)
+test_recall_distorted(model, xD5, x2, synchronous=True, check=0)
+test_recall_distorted(model, xD6, x3, synchronous=True, check=0)
+
+print("\nAsynchronous")
+test_recall_distorted(model, xD4, x1, synchronous=False, check=0)
+test_recall_distorted(model, xD5, x2, synchronous=False, check=0)
+test_recall_distorted(model, xD6, x3, synchronous=False, check=0)
+
+
+# ------------------------------ 3.2 ------------------------------
+pict = np.genfromtxt('pict.dat', delimiter=',', dtype=np.int8).reshape(-1,1024)
+fig = plt.figure(figsize=(10,10))
+for i, pattern in enumerate(pict[:9,:]):
+    fig.add_subplot(330+i+1)
+    plt.imshow(pattern.reshape(32, 32), cmap='gray')
+    plt.title("Pattern "+ str(i+1))
+    
+model_pict = Hopfield()
+model_pict.train(pict[:3,:])
+model_pict.check(pict[:3,:], synchronous=True)
+model_pict.check(pict[:3,:], synchronous=False)
+
 
 
