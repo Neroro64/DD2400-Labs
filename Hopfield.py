@@ -14,8 +14,8 @@ class Hopfield:
         self.weights = np.sum([p.reshape((-1,1))@p.reshape((1,-1)) for p in patterns], axis=0)
         np.fill_diagonal(self.weights, 0)
         
-        #self.weights = self.weights.astype(np.float64).copy()
-        #self.weights /= self.weights.shape[0]
+        self.weights = self.weights.astype(np.float64).copy()
+        self.weights /= self.weights.shape[0]
         
         #print(self.weights)
         
@@ -81,13 +81,19 @@ class Hopfield:
         
    
     # Define a function to find all possible attractors
-    def attractors(self, synchronous=False):
+    def attractors(self, synchronous=True):
         attractors = set()
         all_possible_patterns = binary_patterns(self.weights.shape[1])
         for pattern in all_possible_patterns:
             attractors.add(tuple(self.recall(pattern, synchronous=synchronous, max_iterations=100)))
         
         return np.array([np.array(attractor) for attractor in attractors])
+    
+    
+    def energy(self, state):
+        alpha = state.reshape((-1,1))@state.reshape((1,-1))
+        #return -np.sum(np.sum(alpha*self.weights,  axis=1), axis=0)
+        return -np.sum(alpha*self.weights)
     
 
 def binary_patterns(length):
@@ -112,7 +118,7 @@ def test_recall_distorted(model, pattern_distorted, pattern_expected, synchronou
 
     
         
-               
+          
 #################################################################################### 
 # ------------------------------ 2.2 ------------------------------       
 # Data to be memorised 
@@ -137,47 +143,108 @@ test_recall_distorted(model, x1d, x1, synchronous=True)
 test_recall_distorted(model, x2d, x2, synchronous=True)
 test_recall_distorted(model, x3d, x3, synchronous=True)
 
-print("\nAsynchronous")
-test_recall_distorted(model, x1d, x1, synchronous=False)
-test_recall_distorted(model, x2d, x2, synchronous=False)
-test_recall_distorted(model, x3d, x3, synchronous=False)
+#print("\nAsynchronous")
+#test_recall_distorted(model, x1d, x1, synchronous=False)
+#test_recall_distorted(model, x2d, x2, synchronous=False)
+#test_recall_distorted(model, x3d, x3, synchronous=False)
 
 
-attractors = model.attractors()
+attractors = model.attractors(synchronous=True)
 print("Found {} attractors:".format(len(attractors)))
 for attractor in attractors:
-      print(np.array(attractor))      
-# Answer: The attractors are x1, x2, x3 and their inverses (1 and -1 exchanged)
+      print(np.array(attractor))
+# For Synchronous update, I got 64 attractors.      
+# For Asynchronous update, the attractors are x1, x2, x3 and their inverses (1 and -1 exchanged)    
+# If I dont set the diagonal of the Weight Matrix to 0, I get 14 attractors.
       
       
+     
 # Dissimilar patterns
-xD4 = [1,1,-1,1,-1,-1,1,1]
-xD5 = [1,1,1,1,1,-1,1,-1]
-xD6 = [1,-1,1,1,1,-1,1,-1]
+xD4 = np.array([1,1,-1,1,-1,-1,1,1])
+xD5 = np.array([1,1,1,1,1,-1,1,-1])
+xD6 = np.array([1,-1,1,1,1,-1,1,-1])
 
 print("Synchronous")
 test_recall_distorted(model, xD4, x1, synchronous=True, check=0)
 test_recall_distorted(model, xD5, x2, synchronous=True, check=0)
 test_recall_distorted(model, xD6, x3, synchronous=True, check=0)
 
-print("\nAsynchronous")
-test_recall_distorted(model, xD4, x1, synchronous=False, check=0)
-test_recall_distorted(model, xD5, x2, synchronous=False, check=0)
-test_recall_distorted(model, xD6, x3, synchronous=False, check=0)
+#print("\nAsynchronous")
+#test_recall_distorted(model, xD4, x1, synchronous=False, check=0)
+#test_recall_distorted(model, xD5, x2, synchronous=False, check=0)
+#test_recall_distorted(model, xD6, x3, synchronous=False, check=0)
+
 
 
 # ------------------------------ 3.2 ------------------------------
+### Load images and check if they are memorised ###
 pict = np.genfromtxt('pict.dat', delimiter=',', dtype=np.int8).reshape(-1,1024)
 fig = plt.figure(figsize=(10,10))
-for i, pattern in enumerate(pict[:9,:]):
-    fig.add_subplot(330+i+1)
-    plt.imshow(pattern.reshape(32, 32), cmap='gray')
-    plt.title("Pattern "+ str(i+1))
+
+
+#for i, pattern in enumerate(pict[:9,:]):
+#    fig.add_subplot(330+i+1)
+#    plt.imshow(pattern.reshape(32, 32), cmap='gray')
+#    plt.title("Pattern "+ str(i+1))
+
     
 model_pict = Hopfield()
 model_pict.train(pict[:3,:])
 model_pict.check(pict[:3,:], synchronous=True)
-model_pict.check(pict[:3,:], synchronous=False)
+#model_pict.check(pict[:3,:], synchronous=False)
 
 
+### Plotting the deformed figures ###
+fig = plt.figure(figsize=(10,10))
 
+fig.add_subplot(221)
+plt.imshow(pict[10-1,:].reshape(32, 32), cmap='gray')
+plt.title("Pattern 9")
+
+fig.add_subplot(222)
+patterns_recalled = model_pict.recall(pict[10-1,:], synchronous=True, max_iterations=100)
+plt.imshow(patterns_recalled.reshape(32, 32), cmap='gray')
+plt.title("Pattern 9, Synchronous Recalls")
+
+fig.add_subplot(223)
+plt.imshow(pict[11-1,:].reshape(32, 32), cmap='gray')
+plt.title("Pattern 10")
+
+fig.add_subplot(224)
+patterns_recalled = model_pict.recall(pict[11-1,:], synchronous=True, max_iterations=100)
+plt.imshow(patterns_recalled.reshape(32, 32), cmap='gray')
+plt.title("Pattern 10, Synchronous Recalls")
+
+
+### Sequential updates on images ###
+def sequential_series(pattern, iterations):
+    fig = plt.figure(figsize=(15,10))
+    current_iteration = 0
+    for i, iteration in enumerate(iterations):
+        fig.add_subplot(1, len(iterations), i+1)
+        pattern_update = pattern
+        for _ in range(current_iteration, iteration):
+            pattern_update = model_pict.update(pattern_update, synchronous=False)
+        pattern = pattern_update
+        plt.imshow(pattern.reshape(32, 32), cmap='gray')
+        plt.title("{} Iterations".format(iteration))
+        current_iteration = iteration
+        
+        
+sequential_series(pict[9,:], iterations=range(0, 1025, 256))
+
+
+# ------------------------------ 3.3 ------------------------------
+for attractor in model.attractors(synchronous=False):
+    print("{} => {}".format(attractor, model.energy(attractor)))
+   
+pict = np.genfromtxt('pict.dat', delimiter=',', dtype=np.int8).reshape(-1,1024)
+model_pict = Hopfield()
+model_pict.train(pict[:3,:])
+
+   
+fig = plt.figure(figsize=(15,5))
+for i, attractor in enumerate(pict[:3,:]):
+    fig.add_subplot(1, 3, i+1)
+    plt.imshow(attractor.reshape(32, 32), cmap='gray')
+    plt.title("Energy is {:1.3e}".format(model_pict.energy(attractor)))
