@@ -306,9 +306,9 @@ def profile_capacity(n_patterns, patterns_list=None, dim_patterns=None,
     # Plot well memorised patterns by # of patterns used for training
     #plt.plot(range(1, n_patterns+1), successes_async, label="Asynchronous Updates")
     plt.plot(range(1, n_patterns+1), successes_sync, label="Synchronous Updates")
-    plt.title("Pattern dimension {} with {} distorted".format(dim_patterns, dim_distortion))
-    plt.xlabel("Number of training patterns")
-    plt.ylabel("Well memorised patterns")
+    plt.title("{} units flipped".format(dim_distortion))
+    plt.xlabel("Number of input training patterns")
+    plt.ylabel("Number of memorised patterns")
     plt.legend()
     plt.grid(True)
     
@@ -367,9 +367,9 @@ def profile_capacity_random(n_patterns, patterns_list=None, dim_patterns=None,
     # Plot well memorised patterns by # of patterns used for training
     #plt.plot(range(1, n_patterns+1), successes_async, label="Asynchronous Updates")
     plt.plot(range(1, n_patterns+1), successes_sync, label="Synchronous Updates")
-    plt.title("Pattern dimension {} with {} distorted".format(dim_patterns, dim_distortion))
-    plt.xlabel("Number of training patterns")
-    plt.ylabel("Well memorised patterns")
+    plt.title("{} units flipped".format(dim_distortion))
+    plt.xlabel("Number of input training patterns")
+    plt.ylabel("Number of memorised patterns")
     plt.legend()
     plt.grid(True)
     
