@@ -368,7 +368,7 @@ def profile_capacity_random(n_patterns, patterns_list=None, dim_patterns=None,
     #plt.plot(range(1, n_patterns+1), successes_async, label="Asynchronous Updates")
     plt.plot(range(1, n_patterns+1), successes_sync, label="Synchronous Updates")
     plt.title("{} units flipped".format(dim_distortion))
-    plt.xlabel("Number of input training patterns")
+    plt.xlabel("Number of input training patterns of dimension 100")
     plt.ylabel("Number of memorised patterns")
     plt.legend()
     plt.grid(True)
