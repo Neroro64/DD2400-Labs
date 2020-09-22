@@ -376,6 +376,10 @@ def profile_capacity_random(n_patterns, patterns_list=None, dim_patterns=None,
 
 #profile_capacity(patterns_list=list(pict), n_patterns=5)
 
-profile_capacity_random(n_patterns=300, dim_patterns=100)
+#profile_capacity_random(n_patterns=300, dim_patterns=100)
 
 #profile_capacity_random(n_patterns=300, dim_patterns=100, dim_distortion=5)
+    
+#profile_capacity_random(n_patterns=300, dim_patterns=100, remove_self_connections=True)
+
+profile_capacity_random(n_patterns=300, dim_patterns=100, bias=0.5, remove_self_connections=True)
