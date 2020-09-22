@@ -12,7 +12,15 @@ class Hopfield:
     def train(self, patterns):    
         # Matrix multiply pattern as two column vectors, then sum over all patterns
         self.weights = np.sum([p.reshape((-1,1))@p.reshape((1,-1)) for p in patterns], axis=0)
-        np.fill_diagonal(self.weights, 0)
+        
+        """
+        self.weights = np.zeros(((patterns[0].reshape((-1,1))@patterns[0].reshape((1,-1))).shape))
+        for p in patterns: 
+            self.weights += p.reshape((-1,1))@p.reshape((1,-1))
+        """
+        
+        # The lab seems to want these to stay non-zero
+        #np.fill_diagonal(self.weights, 0)
         
         self.weights = self.weights.astype(np.float64).copy()
         self.weights /= self.weights.shape[0]
@@ -248,3 +256,126 @@ for i, attractor in enumerate(pict[:3,:]):
     fig.add_subplot(1, 3, i+1)
     plt.imshow(attractor.reshape(32, 32), cmap='gray')
     plt.title("Energy is {:1.3e}".format(model_pict.energy(attractor)))
+    
+    
+    
+# ------------------------------ 3.5 ------------------------------
+pict = np.genfromtxt('pict.dat', delimiter=',', dtype=np.int8).reshape(-1,1024)
+
+def profile_capacity(n_patterns, patterns_list=None, dim_patterns=None, 
+                     dim_distortion=0, bias=0, remove_self_connections=False):
+    
+
+    dim_patterns = patterns_list[0].shape[0]
+    
+    # Iterate number of patterns for training
+    successes_async = []
+    successes_sync = []
+    for n in range(1,n_patterns+1):
+        
+        # Train Hopfield Network with n patterns
+        model = Hopfield()
+        model.train(patterns_list[:n])
+        if remove_self_connections:
+            for i in range(dim_patterns):
+                model.weights[i,i] = 0
+        
+        # Iterate patterns used for training and check recall
+        success_async = 0
+        success_sync = 0
+        for pattern in patterns_list[:n]:
+            
+            # Check stability for async. updates
+            pattern2 = pattern.copy()
+            pattern3 = pattern.copy()
+            
+            #for _ in range(len(pattern)):
+                #pattern3 = model.recall(pattern3, synchronous=False, max_iterations=1)
+            #if np.array_equal(pattern3, pattern):
+                #success_async += 1
+            
+            # Check stability for sync. updates
+            pattern3 = model.update(pattern2, synchronous=True)
+            if np.array_equal(pattern3, pattern):
+                success_sync += 1
+            
+        # Store well memorised patterns
+        successes_async.append(success_async)
+        successes_sync.append(success_sync)
+    
+    # Plot well memorised patterns by # of patterns used for training
+    #plt.plot(range(1, n_patterns+1), successes_async, label="Asynchronous Updates")
+    plt.plot(range(1, n_patterns+1), successes_sync, label="Synchronous Updates")
+    plt.title("Pattern dimension {} with {} distorted".format(dim_patterns, dim_distortion))
+    plt.xlabel("Number of training patterns")
+    plt.ylabel("Well memorised patterns")
+    plt.legend()
+    plt.grid(True)
+    
+    
+def profile_capacity_random(n_patterns, patterns_list=None, dim_patterns=None, 
+                     dim_distortion=0, bias=0, remove_self_connections=False):
+    
+    # Create patterns if random_patterns selected
+    if bias==0:
+        patterns_list = [np.random.choice([-1,1], size=dim_patterns).astype(int) for _ in range(n_patterns)]
+    else:
+        patterns_list = [np.sign(bias+np.random.randn(dim_patterns)) for _ in range(n_patterns)]
+        for i in range(len(patterns_list)):
+            patterns_list[i][patterns_list[i]==0] = 1
+            
+
+    
+    # Iterate number of patterns for training
+    successes_async = []
+    successes_sync = []
+    for n in range(1,n_patterns+1):
+        
+        # Train Hopfield Network with n patterns
+        model = Hopfield()
+        model.train(patterns_list[:n])
+        if remove_self_connections:
+            for i in range(dim_patterns):
+                model.weights[i,i] = 0
+        
+        # Iterate patterns used for training and check recall
+        success_async = 0
+        success_sync = 0
+        for pattern in patterns_list[:n]:
+            
+            # Create noise in the pattern in as much dimensions as dim_distortion
+            pattern_noisy = pattern.copy()
+            to_flip = np.random.choice(len(pattern_noisy), size=dim_distortion, replace=False)
+            pattern_noisy[to_flip] *= -1
+            
+            # Check stability for async. updates
+            pattern_noisy_updated = pattern_noisy
+            #for _ in range(len(pattern)):
+                #pattern_noisy_updated = model.recall(pattern_noisy_updated, synchronous=False, max_iterations=1)
+            #if np.array_equal(pattern_noisy_updated, pattern):
+                #success_async += 1
+            
+            # Check stability for sync. updates
+            pattern_noisy_updated = model.update(pattern_noisy, synchronous=True)
+            if np.array_equal(pattern_noisy_updated, pattern):
+                success_sync += 1
+        
+        # Store well memorised patterns
+        successes_async.append(success_async)
+        successes_sync.append(success_sync)
+    
+    # Plot well memorised patterns by # of patterns used for training
+    #plt.plot(range(1, n_patterns+1), successes_async, label="Asynchronous Updates")
+    plt.plot(range(1, n_patterns+1), successes_sync, label="Synchronous Updates")
+    plt.title("Pattern dimension {} with {} distorted".format(dim_patterns, dim_distortion))
+    plt.xlabel("Number of training patterns")
+    plt.ylabel("Well memorised patterns")
+    plt.legend()
+    plt.grid(True)
+    
+
+#profile_capacity(patterns_list=list(pict), n_patterns=5)
+
+profile_capacity_random(n_patterns=300, dim_patterns=100)
+
+#profile_capacity_random(n_patterns=300, dim_patterns=100, dim_distortion=5)
