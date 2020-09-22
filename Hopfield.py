@@ -374,7 +374,52 @@ def profile_capacity_random(n_patterns, patterns_list=None, dim_patterns=None,
     plt.grid(True)
     
 
-#profile_capacity(patterns_list=list(pict), n_patterns=5)
+##### The experiments:
+def run_pics_list(pictures, order):
+    pics_to_store = list(pictures[:3])
+    
+    for i in order:
+        pics_to_store.append(pictures[i]) 
+        
+    num = 3 + len(order)    
+    
+    profile_capacity(patterns_list=pics_to_store, n_patterns=num)
+    
+
+""" Need to add plotting of pictures"""
+#-------------- Pattern adding order 1,2,3,4,5,6,7 -------------- 
+#order = [4,5,6,7]    
+#run_pics_list(pict, order)
+    
+#-------------- Pattern adding order 1,2,3,4 -------------- 
+#order = [4]    
+#run_pics_list(pict, order)
+
+#-------------- Pattern adding order 1,2,3,5 -------------- 
+#order = [5]    
+#run_pics_list(pict, order)
+    
+#-------------- Pattern adding order 1,2,3,6 -------------- 
+#order = [6]    
+#run_pics_list(pict, order)
+    
+#-------------- Pattern adding order 1,2,3,7 -------------- 
+#order = [6]    
+#run_pics_list(pict, order)
+    
+def run_pics_list_specific(pictures, order=[5,8,9]):
+    pics_to_store = list(pictures[:3])
+    
+    pics_to_store = [pics_to_store[2]]
+    
+    for i in order:
+        pics_to_store.append(pictures[i]) 
+        
+    num = 1 + len(order)    
+    
+    profile_capacity(patterns_list=pics_to_store, n_patterns=num)
+
+#run_pics_list_specific(pict)
 
 #profile_capacity_random(n_patterns=300, dim_patterns=100)
 
@@ -382,4 +427,4 @@ def profile_capacity_random(n_patterns, patterns_list=None, dim_patterns=None,
     
 #profile_capacity_random(n_patterns=300, dim_patterns=100, remove_self_connections=True)
 
-profile_capacity_random(n_patterns=300, dim_patterns=100, bias=0.5, remove_self_connections=True)
+# profile_capacity_random(n_patterns=300, dim_patterns=100, bias=0.5, remove_self_connections=True)
