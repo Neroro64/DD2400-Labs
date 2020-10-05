@@ -66,7 +66,7 @@ def load_idxfile(filename):
     Load idx file format. For more information : http://yann.lecun.com/exdb/mnist/ 
     """
     import struct
-        
+    import os
     with open(filename,'rb') as _file:
         if ord(_file.read(1)) != 0 or ord(_file.read(1)) != 0 :
            raise Exception('Invalid idx file: unexpected magic number!')

@@ -1,5 +1,5 @@
-from util import *
-from rbm import RestrictedBoltzmannMachine
+# from util import *
+# from rbm import RestrictedBoltzmannMachine
 
 class DeepBeliefNet():    
 
